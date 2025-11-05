@@ -1,0 +1,37 @@
+========================================
+  UAV File Broadcast Receiver
+  UAV ID: 1
+========================================
+[UAV 1] Listening for broadcasts on 239.255.1.1:9000
+[UAV 1] Message receiver thread started.
+[UAV 1] Session initialized:
+  File: test_file.bin
+  Total chunks: 300
+  Total windows: 5
+  Output: received_uav1_test_file.bin
+[UAV 1] Window 0 status: received 60/64 chunks, received_bitmap=0x9effffffffffff7f, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x6100000000000080
+[UAV 1] Window 0: Preparing to send NACK for 4 missing chunks
+[UAV 1] Sent NACK for window 0 (missing 60 chunks)
+[UAV 1] Window 0 completed and saved.
+[UAV 1] Progress: 100/300 chunks (33.3%)
+[UAV 1] Window 1 status: received 56/64 chunks, received_bitmap=0x7efbf7ff7dfefdff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x8104080082010200
+[UAV 1] Window 1: Preparing to send NACK for 8 missing chunks
+[UAV 1] Sent NACK for window 1 (missing 56 chunks)
+[UAV 1] Window 1 completed and saved.
+[UAV 1] Window 2 status: received 54/64 chunks, received_bitmap=0x7feffdbfbffcff5d, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x80100240400300a2
+[UAV 1] Window 2: Preparing to send NACK for 10 missing chunks
+[UAV 1] Sent NACK for window 2 (missing 54 chunks)
+[UAV 1] Window 2 completed and saved.
+[UAV 1] Progress: 200/300 chunks (66.7%)
+[UAV 1] Window 3 status: received 55/64 chunks, received_bitmap=0x77fff7ffd6f7ffaf, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x8800080029080050
+[UAV 1] Window 3: Preparing to send NACK for 9 missing chunks
+[UAV 1] Sent NACK for window 3 (missing 55 chunks)
+[UAV 1] Window 3 completed and saved.
+[UAV 1] Window 4 status: received 40/44 chunks, received_bitmap=0xbfdfffff5ff, expected_bitmap=0xfffffffffff, missing_bitmap=0x40200000a00
+[UAV 1] Window 4: Preparing to send NACK for 4 missing chunks
+[UAV 1] Sent NACK for window 4 (missing 60 chunks)
+[UAV 1] Window 4 completed and saved.
+[UAV 1] Progress: 300/300 chunks (100.0%)
+[UAV 1] Received END message, verifying file...
+[UAV 1] Received END message, verifying file...
+free(): double free detected in tcache 2

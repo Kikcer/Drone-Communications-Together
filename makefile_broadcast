@@ -1,0 +1,75 @@
+CC = gcc
+CFLAGS = -Wall -g -pthread -O2
+LDFLAGS = -pthread -lm
+
+# 源文件
+COMMON_SRC = common.c
+MASTER_SRC = master.c
+RECEIVER_SRC = receiver.c
+HEADER = broadcast_protocol.h
+
+# 可执行文件
+MASTER_OUT = master
+RECEIVER_OUT = receiver
+
+# 默认目标：编译所有
+all: $(MASTER_OUT) $(RECEIVER_OUT)
+
+# 编译master
+$(MASTER_OUT): $(MASTER_SRC) $(COMMON_SRC) $(HEADER)
+	$(CC) $(CFLAGS) -o $@ $(MASTER_SRC) $(COMMON_SRC) $(LDFLAGS)
+	@echo "✓ Master built successfully"
+
+# 编译receiver
+$(RECEIVER_OUT): $(RECEIVER_SRC) $(COMMON_SRC) $(HEADER)
+	$(CC) $(CFLAGS) -o $@ $(RECEIVER_SRC) $(COMMON_SRC) $(LDFLAGS)
+	@echo "✓ Receiver built successfully"
+
+# 清理
+clean:
+	rm -f $(MASTER_OUT) $(RECEIVER_OUT)
+	rm -f received_*
+	@echo "✓ Cleaned"
+
+# 创建测试文件
+test-file:
+	dd if=/dev/urandom of=test_file.bin bs=3K count=300
+	@echo "✓ Created test file: test_file.bin (300KB)"
+
+# 运行示例：1个master
+run-master: $(MASTER_OUT)
+	./$(MASTER_OUT) test_file.bin 1
+
+# 运行示例：启动多个receiver（在不同终端）
+run-receiver1: $(RECEIVER_OUT)
+	./$(RECEIVER_OUT) 1
+
+run-receiver2: $(RECEIVER_OUT)
+	./$(RECEIVER_OUT) 2
+
+run-receiver3: $(RECEIVER_OUT)
+	./$(RECEIVER_OUT) 3
+
+# 帮助信息
+help:
+	@echo "UAV File Broadcast System - Makefile"
+	@echo ""
+	@echo "Targets:"
+	@echo "  all           - Build master and receiver"
+	@echo "  master        - Build master only"
+	@echo "  receiver      - Build receiver only"
+	@echo "  clean         - Remove executables and received files"
+	@echo "  test-file     - Create a test file (100KB)"
+	@echo "  run-master    - Run master with test file"
+	@echo "  run-receiverN - Run receiver with ID N"
+	@echo "  help          - Show this help"
+	@echo ""
+	@echo "Usage:"
+	@echo "  1. make all"
+	@echo "  2. make test-file"
+	@echo "  3. In terminal 1: make run-receiver1"
+	@echo "  4. In terminal 2: make run-receiver2"
+	@echo "  5. In terminal 3: make run-master"
+
+.PHONY: all clean test-file help run-master run-receiver1 run-receiver2 run-receiver3
+
