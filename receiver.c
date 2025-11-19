@@ -190,7 +190,7 @@ void *nack_timer_thread(void *arg)
 
         send_multicast(g_multicast_sock, &nack, sizeof(nack));
 
-        int missing_count = count_missing_bits(ctx->my_missing_bitmap);
+        int missing_count = count_set_bits(ctx->my_missing_bitmap);
         printf("[UAV %u] Sent NACK for window %u (missing %d chunks)\n",
                g_uav_id, ctx->window_id, missing_count);
     }
@@ -223,12 +223,12 @@ void process_status_request(const StatusRequest *req)
     pthread_mutex_lock(&g_session_mutex);
     WindowState *window = &g_session.windows[window_id];
 
-    // 如果窗口已完成，不需要响应
-    if (window->completed)
-    {
-        pthread_mutex_unlock(&g_session_mutex);
-        return;
-    }
+    // // 如果窗口已完成，不需要响应
+    // if (window->completed)
+    // {
+    //     pthread_mutex_unlock(&g_session_mutex);
+    //     return;
+    // }
 
     uint64_t received_bitmap = window->received_bitmap;
     pthread_mutex_unlock(&g_session_mutex);
@@ -264,13 +264,13 @@ void process_status_request(const StatusRequest *req)
            (unsigned long long)expected_bitmap,
            (unsigned long long)missing_bitmap);
 
-    if (missing_bitmap == 0)
-    {
-        printf("[UAV %u] Window %u: No missing chunks, not sending NACK\n", g_uav_id, window_id);
-        return; // 没有缺失，不响应
-    }
+    // if (missing_bitmap == 0)
+    // {
+    //     printf("[UAV %u] Window %u: No missing chunks, not sending NACK\n", g_uav_id, window_id);
+    //     return; // 没有缺失，不响应
+    // }
 
-    // 计算缺失块数量
+    // 计算缺失块数量（用于日志）
     int missing_count = 0;
     for (int i = 0; i < 64; i++)
     {
@@ -279,33 +279,20 @@ void process_status_request(const StatusRequest *req)
             missing_count++;
         }
     }
-    printf("[UAV %u] Window %u: Preparing to send NACK for %d missing chunks\n",
-           g_uav_id, window_id, missing_count);
+    printf("[UAV %u] Window %u: Sending bitmap response (round %u, missing %d chunks)\n",
+           g_uav_id, window_id, req->round_id, missing_count);
 
-    // 启动NACK抑制机制
-    pthread_mutex_lock(&g_nack_mutex);
-
-    // 取消之前的NACK定时器（如果存在）
-    if (g_nack_ctx.active)
-    {
-        g_nack_ctx.suppressed = true;
-    }
-
-    // 创建新的NACK上下文
-    g_nack_ctx.active = true;
-    g_nack_ctx.window_id = window_id;
-    g_nack_ctx.round_id = req->round_id;
-    g_nack_ctx.my_missing_bitmap = missing_bitmap; // 存储缺失块的bitmap
-    g_nack_ctx.suppressed = false;
-
-    // 随机退避延迟（0 ~ NACK_TIMEOUT_MS）
-    g_nack_ctx.pending_timeout_ms = rand() % NACK_TIMEOUT_MS;
-
-    // 启动定时器线程
-    pthread_create(&g_nack_ctx.timer_thread, NULL, nack_timer_thread, &g_nack_ctx);
-    pthread_detach(g_nack_ctx.timer_thread);
-
-    pthread_mutex_unlock(&g_nack_mutex);
+    // 直接发送bitmap响应（使用NACK报文，missing_bitmap可为0，表示无缺失）
+    NackMessage nack;
+    memset(&nack, 0, sizeof(nack));
+    nack.header.msg_type = MSG_NACK;
+    nack.header.payload_len = sizeof(NackMessage) - sizeof(MessageHeader);
+    nack.file_id = g_session.file_id;
+    nack.window_id = window_id;
+    nack.round_id = req->round_id;
+    nack.uav_id = g_uav_id;
+    nack.missing_bitmap = missing_bitmap;
+    send_multicast(g_multicast_sock, &nack, sizeof(nack));
 }
 
 // ========== 处理其他节点的NACK（用于抑制） ==========

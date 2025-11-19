@@ -544,3 +544,4 @@ make -f makefile_broadcast clean all
 
 **两套系统各有优势，根据你的实际需求选择使用！**
 
+pkill -f receiver && pkill -f master

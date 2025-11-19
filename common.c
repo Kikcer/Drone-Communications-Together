@@ -160,13 +160,13 @@ void print_bitmap(uint64_t bitmap)
     printf("\n");
 }
 
-// ========== 计算bitmap中缺失的块数量 ==========
-int count_missing_bits(uint64_t bitmap)
+// ========== 计算bitmap中置位(1)的数量 ==========
+int count_set_bits(uint64_t bitmap)
 {
     int count = 0;
     for (int i = 0; i < 64; i++)
     {
-        if (!(bitmap & (1ULL << i)))
+        if (bitmap & (1ULL << i))
         {
             count++;
         }

@@ -22,6 +22,8 @@
 #define NACK_TIMEOUT_MS 50      // NACK随机退避最大延迟
 #define STATUS_REQ_INTERVAL 500 // 状态查询间隔（毫秒）增加以确保NACK有足够时间
 #define MAX_RETRANS_ROUNDS 10   // 最大重传轮数
+#define ANNOUNCE_REPEAT_COUNT 5 // 会话启动报文重复发送次数
+#define MAX_RESEND_BITMAP_ASK 3 // 每轮STATUS_REQ重发上限
 
 // ========== 丢包模拟配置（用于WSL2等不支持tc的环境）==========
 // 设置为0禁用丢包模拟，设置为1-100表示丢包百分比
@@ -128,9 +130,10 @@ typedef struct
 typedef struct
 {
     uint32_t window_id;
-    uint64_t need_retransmit; // 需要重传的块bitmap
-    uint8_t round_count;      // 已查询轮数
-    bool completed;           // 窗口是否完成
+    uint64_t need_retransmit;      // 需要重传的块bitmap
+    uint8_t round_count;           // 已查询轮数
+    bool completed;                // 窗口是否完成
+    uint32_t responded_uav_bitmap; // 当前窗口最近一次查询收到响应的UAV位图
 } MasterWindowState;
 
 // 发送方会话状态
@@ -144,7 +147,8 @@ typedef struct
     uint32_t total_windows;
     FILE *input_file;
     MasterWindowState *windows;
-    bool broadcast_completed; // 是否完成初始广播
+    bool broadcast_completed;   // 是否完成初始广播
+    uint32_t known_uavs_bitmap; // 已知UAV集合（动态发现）
 } MasterSession;
 
 // ========== 工具函数声明 ==========
@@ -170,8 +174,10 @@ uint64_t get_time_ms();
 // 打印bitmap（调试用）
 void print_bitmap(uint64_t bitmap);
 
-// 检查bitmap中缺失的块数量
-int count_missing_bits(uint64_t bitmap);
+// // 检查bitmap中缺失的块数量
+// int count_missing_bits(uint64_t bitmap);
+// 检查bitmap中置位(1)的数量
+int count_set_bits(uint64_t bitmap);
 
 // 判断bitmap1是否包含bitmap2的所有缺失块
 bool bitmap_covers(uint64_t bitmap1, uint64_t bitmap2);

@@ -73,13 +73,11 @@ void send_session_announce()
     strncpy(msg.filename, g_session.filename, sizeof(msg.filename) - 1);
 
     printf("[Master] Sending SESSION_ANNOUNCE...\n");
-    send_multicast(g_multicast_sock, &msg, sizeof(msg));
-
-    // 多次发送以提高可靠性
-    usleep(10000);
-    send_multicast(g_multicast_sock, &msg, sizeof(msg));
-    usleep(10000);
-    send_multicast(g_multicast_sock, &msg, sizeof(msg));
+    for (int i = 0; i < ANNOUNCE_REPEAT_COUNT; i++)
+    {
+        send_multicast(g_multicast_sock, &msg, sizeof(msg));
+        usleep(10000);
+    }
 }
 
 // ========== 阶段2: 广播单个窗口的数据块 ==========
@@ -172,9 +170,15 @@ void *nack_receiver_thread(void *arg)
                 // 合并NACK的缺失块到窗口状态
                 // nack->missing_bitmap 已经是缺失块的bitmap，直接使用
                 g_session.windows[window_id].need_retransmit |= nack->missing_bitmap;
+                // 记录已知UAV与本窗口的响应
+                if (nack->uav_id < MAX_UAVS)
+                {
+                    g_session.known_uavs_bitmap |= (1u << nack->uav_id);
+                    g_session.windows[window_id].responded_uav_bitmap |= (1u << nack->uav_id);
+                }
 
-                printf("[Master] Received NACK from UAV %u for window %u, missing bits: %d\n",
-                       nack->uav_id, window_id, count_missing_bits(nack->missing_bitmap));
+                printf("[Master] Received NACK from UAV %u for window %u (round %u), missing bits: %d\n",
+                       nack->uav_id, window_id, nack->round_id, count_set_bits(nack->missing_bitmap));
             }
 
             pthread_mutex_unlock(&g_session_mutex);
@@ -261,20 +265,37 @@ void window_by_window_transmission()
 
         for (uint16_t round = 0; round < MAX_RETRANS_ROUNDS; round++)
         {
-            // 清零上一轮的重传标记，准备接收新的NACK
+            // 清零上一轮的重传标记与响应位图，准备接收新的应答
             pthread_mutex_lock(&g_session_mutex);
             g_session.windows[window_id].need_retransmit = 0;
+            g_session.windows[window_id].responded_uav_bitmap = 0;
             pthread_mutex_unlock(&g_session_mutex);
 
-            // 发送状态查询
-            send_status_request(window_id, round);
+            // 在未收到全部已知UAV的响应时，重发STATUS_REQ，最多MAX_RESEND_BITMAP_ASK次
+            for (int attempt = 0; attempt < MAX_RESEND_BITMAP_ASK; attempt++)
+            {
+                // 发送状态查询
+                printf("[Master] Sending STATUS_REQ for window %u (round %u, attempt %d)\n", window_id, round, attempt + 1);
+                send_status_request(window_id, round);
+                // 等待响应
+                usleep(STATUS_REQ_INTERVAL * 1000);
 
-            // 等待NACK响应
-            usleep(STATUS_REQ_INTERVAL * 1000); // 等待接收方响应
+                // 检查是否所有已知UAV都已响应
+                pthread_mutex_lock(&g_session_mutex);
+                uint32_t known_mask = g_session.known_uavs_bitmap;
+                uint32_t responded_mask = g_session.windows[window_id].responded_uav_bitmap;
+                pthread_mutex_unlock(&g_session_mutex);
+                if (known_mask == 0 || (responded_mask & known_mask) == known_mask)
+                {
+                    break; // 所有已知UAV均已响应，结束重发
+                }
+            }
 
-            // 检查是否收到NACK
+            // 检查是否收到NACK（是否需要重传）
             pthread_mutex_lock(&g_session_mutex);
             uint64_t need_retransmit = g_session.windows[window_id].need_retransmit;
+            uint32_t known_mask = g_session.known_uavs_bitmap;
+            uint32_t responded_mask = g_session.windows[window_id].responded_uav_bitmap;
             pthread_mutex_unlock(&g_session_mutex);
 
             // 如果收到NACK，执行重传
@@ -285,17 +306,26 @@ void window_by_window_transmission()
             }
             else
             {
-                no_nack_rounds++;
-                // 连续3轮没有收到NACK，才认为窗口完成
-                if (no_nack_rounds >= 3)
+                // 仅当所有已知UAV均已响应且没有需要重传的块时，才记为一轮“无NACK”
+                if (known_mask == 0 || (responded_mask & known_mask) == known_mask)
                 {
-                    pthread_mutex_lock(&g_session_mutex);
-                    g_session.windows[window_id].completed = true;
-                    pthread_mutex_unlock(&g_session_mutex);
-                    printf("[Master] Window %u completed after %u rounds (no NACK for 3 consecutive rounds).\n",
-                           window_id, round);
-                    window_completed = true;
-                    break;
+                    no_nack_rounds++;
+                    // 连续3轮没有收到NACK，才认为窗口完成
+                    if (no_nack_rounds >= 3)
+                    {
+                        pthread_mutex_lock(&g_session_mutex);
+                        g_session.windows[window_id].completed = true;
+                        pthread_mutex_unlock(&g_session_mutex);
+                        printf("[Master] Window %u completed after %u rounds (no NACK for 3 consecutive rounds).\n",
+                               window_id, round);
+                        window_completed = true;
+                        break;
+                    }
+                }
+                else
+                {
+                    // 未收到所有已知UAV响应，不计入“无NACK”轮
+                    no_nack_rounds = 0;
                 }
             }
         }
