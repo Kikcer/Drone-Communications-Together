@@ -9,10 +9,10 @@
   Total chunks: 300
   Total windows: 5
   Output: received_uav2_test_file.bin
-[UAV 2] Window 0 completed and saved.
 [UAV 2] Received STATUS_REQ for window 0 (round 0)
-[UAV 2] Window 0 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
-[UAV 2] Window 0: Sending bitmap response (round 0, missing 0 chunks)
+[UAV 2] Window 0 status: received 62/64 chunks, received_bitmap=0xfffdfffdffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x2000200000000
+[UAV 2] Window 0: Sending bitmap response (round 0, missing 2 chunks)
+[UAV 2] Window 0 completed and saved.
 [UAV 2] Received STATUS_REQ for window 0 (round 1)
 [UAV 2] Window 0 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 2] Window 0: Sending bitmap response (round 1, missing 0 chunks)
@@ -22,13 +22,10 @@
 [UAV 2] Received STATUS_REQ for window 0 (round 3)
 [UAV 2] Window 0 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 2] Window 0: Sending bitmap response (round 3, missing 0 chunks)
-[UAV 2] Received STATUS_REQ for window 0 (round 4)
-[UAV 2] Window 0 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
-[UAV 2] Window 0: Sending bitmap response (round 4, missing 0 chunks)
 [UAV 2] Progress: 100/300 chunks (33.3%)
 [UAV 2] Received STATUS_REQ for window 1 (round 0)
-[UAV 2] Window 1 status: received 59/64 chunks, received_bitmap=0xfefffffffe7fdfbf, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x100000001802040
-[UAV 2] Window 1: Sending bitmap response (round 0, missing 5 chunks)
+[UAV 2] Window 1 status: received 57/64 chunks, received_bitmap=0xfffeeffff3ebefff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x110000c141000
+[UAV 2] Window 1: Sending bitmap response (round 0, missing 7 chunks)
 [UAV 2] Window 1 completed and saved.
 [UAV 2] Received STATUS_REQ for window 1 (round 1)
 [UAV 2] Window 1 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
@@ -39,12 +36,9 @@
 [UAV 2] Received STATUS_REQ for window 1 (round 3)
 [UAV 2] Window 1 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 2] Window 1: Sending bitmap response (round 3, missing 0 chunks)
-[UAV 2] Received STATUS_REQ for window 1 (round 4)
-[UAV 2] Window 1 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
-[UAV 2] Window 1: Sending bitmap response (round 4, missing 0 chunks)
 [UAV 2] Received STATUS_REQ for window 2 (round 0)
-[UAV 2] Window 2 status: received 63/64 chunks, received_bitmap=0xffffffffff7fffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x800000
-[UAV 2] Window 2: Sending bitmap response (round 0, missing 1 chunks)
+[UAV 2] Window 2 status: received 60/64 chunks, received_bitmap=0xbfffffdfff5fffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x4000002000a00000
+[UAV 2] Window 2: Sending bitmap response (round 0, missing 4 chunks)
 [UAV 2] Window 2 completed and saved.
 [UAV 2] Received STATUS_REQ for window 2 (round 1)
 [UAV 2] Window 2 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
@@ -55,29 +49,23 @@
 [UAV 2] Received STATUS_REQ for window 2 (round 3)
 [UAV 2] Window 2 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 2] Window 2: Sending bitmap response (round 3, missing 0 chunks)
-[UAV 2] Received STATUS_REQ for window 2 (round 4)
-[UAV 2] Window 2 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
-[UAV 2] Window 2: Sending bitmap response (round 4, missing 0 chunks)
 [UAV 2] Progress: 200/300 chunks (66.7%)
 [UAV 2] Received STATUS_REQ for window 3 (round 0)
-[UAV 2] Window 3 status: received 61/64 chunks, received_bitmap=0xffffdbffffffbfff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x240000004000
-[UAV 2] Window 3: Sending bitmap response (round 0, missing 3 chunks)
-[UAV 2] Received STATUS_REQ for window 3 (round 1)
-[UAV 2] Window 3 status: received 63/64 chunks, received_bitmap=0xffffffffffffbfff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x4000
-[UAV 2] Window 3: Sending bitmap response (round 1, missing 1 chunks)
+[UAV 2] Window 3 status: received 60/64 chunks, received_bitmap=0xfffffffff7f3fffd, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x80c0002
+[UAV 2] Window 3: Sending bitmap response (round 0, missing 4 chunks)
 [UAV 2] Window 3 completed and saved.
+[UAV 2] Received STATUS_REQ for window 3 (round 1)
+[UAV 2] Window 3 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
+[UAV 2] Window 3: Sending bitmap response (round 1, missing 0 chunks)
 [UAV 2] Received STATUS_REQ for window 3 (round 2)
 [UAV 2] Window 3 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 2] Window 3: Sending bitmap response (round 2, missing 0 chunks)
 [UAV 2] Received STATUS_REQ for window 3 (round 3)
 [UAV 2] Window 3 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 2] Window 3: Sending bitmap response (round 3, missing 0 chunks)
-[UAV 2] Received STATUS_REQ for window 3 (round 4)
-[UAV 2] Window 3 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
-[UAV 2] Window 3: Sending bitmap response (round 4, missing 0 chunks)
 [UAV 2] Received STATUS_REQ for window 4 (round 0)
-[UAV 2] Window 4 status: received 42/44 chunks, received_bitmap=0xfffdfbfffff, expected_bitmap=0xfffffffffff, missing_bitmap=0x20400000
-[UAV 2] Window 4: Sending bitmap response (round 0, missing 2 chunks)
+[UAV 2] Window 4 status: received 40/44 chunks, received_bitmap=0xffff7ffff57, expected_bitmap=0xfffffffffff, missing_bitmap=0x80000a8
+[UAV 2] Window 4: Sending bitmap response (round 0, missing 4 chunks)
 [UAV 2] Window 4 completed and saved.
 [UAV 2] Progress: 300/300 chunks (100.0%)
 [UAV 2] Received STATUS_REQ for window 4 (round 1)
@@ -89,6 +77,9 @@
 [UAV 2] Received STATUS_REQ for window 4 (round 3)
 [UAV 2] Window 4 status: received 44/44 chunks, received_bitmap=0xfffffffffff, expected_bitmap=0xfffffffffff, missing_bitmap=0x0
 [UAV 2] Window 4: Sending bitmap response (round 3, missing 0 chunks)
+[UAV 2] Received STATUS_REQ for window 4 (round 4)
+[UAV 2] Window 4 status: received 44/44 chunks, received_bitmap=0xfffffffffff, expected_bitmap=0xfffffffffff, missing_bitmap=0x0
+[UAV 2] Window 4: Sending bitmap response (round 4, missing 0 chunks)
 [UAV 2] Received END message, verifying file...
 [UAV 2] Received END message, verifying file...
 free(): double free detected in tcache 2

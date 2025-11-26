@@ -16,18 +16,22 @@
 // ========== 协议参数配置 ==========
 #define MULTICAST_GROUP "239.255.1.1"
 #define MULTICAST_PORT 9000
-#define MAX_CHUNK_SIZE 1024     // 每个数据块1KB
-#define WINDOW_SIZE 64          // 每个窗口64个块
-#define MAX_UAVS 32             // 最大无人机数量
-#define NACK_TIMEOUT_MS 50      // NACK随机退避最大延迟
-#define STATUS_REQ_INTERVAL 500 // 状态查询间隔（毫秒）增加以确保NACK有足够时间
-#define MAX_RETRANS_ROUNDS 10   // 最大重传轮数
-#define ANNOUNCE_REPEAT_COUNT 5 // 会话启动报文重复发送次数
-#define MAX_RESEND_BITMAP_ASK 3 // 每轮STATUS_REQ重发上限
+#define MAX_CHUNK_SIZE 1024      // 每个数据块1KB
+#define WINDOW_SIZE 64           // 每个窗口64个块
+#define MAX_UAVS 32              // 最大无人机数量
+#define NACK_TIMEOUT_MS 50       // NACK随机退避最大延迟
+#define STATUS_REQ_INTERVAL 500  // 状态查询间隔（毫秒）增加以确保NACK有足够时间
+#define MAX_RETRANS_ROUNDS 10    // 最大重传轮数
+#define ANNOUNCE_REPEAT_COUNT 5  // 会话启动报文重复发送次数
+#define MAX_RESEND_BITMAP_ASK 30 // 每轮STATUS_REQ重发上限
 
 // ========== 丢包模拟配置（用于WSL2等不支持tc的环境）==========
 // 设置为0禁用丢包模拟，设置为1-100表示丢包百分比
 #define SIMULATE_PACKET_LOSS 0 // 丢包率百分比（0=禁用，10=10%丢包）
+
+// ========== 队列配置 ==========
+#define QUEUE_CAPACITY 200   // 队列最大容量
+#define MAX_PACKET_SIZE 2048 // 最大报文长度
 
 // ========== 消息类型 ==========
 typedef enum
@@ -100,6 +104,19 @@ typedef struct __attribute__((packed))
     uint32_t file_hash;    // 文件hash校验
 } EndMessage;
 
+// ========== 队列结构 ==========
+typedef struct
+{
+    uint8_t data[QUEUE_CAPACITY][MAX_PACKET_SIZE];
+    size_t lens[QUEUE_CAPACITY];
+    int head;
+    int tail;
+    int count;
+    pthread_mutex_t mutex;
+    pthread_cond_t not_empty;
+    pthread_cond_t not_full;
+} PacketQueue;
+
 // ========== 本地状态结构 ==========
 
 // 窗口接收状态
@@ -162,10 +179,10 @@ uint32_t simple_hash(const uint8_t *data, size_t len);
 // 创建组播socket
 int create_multicast_socket(bool sender);
 
-// 发送组播消息
+// 发送组播消息 (旧接口，内部使用)
 int send_multicast(int sock, const void *data, size_t len);
 
-// 接收组播消息
+// 接收组播消息 (旧接口，内部使用)
 int recv_multicast(int sock, void *buffer, size_t len, struct sockaddr_in *src_addr);
 
 // 获取当前时间（毫秒）
@@ -174,12 +191,24 @@ uint64_t get_time_ms();
 // 打印bitmap（调试用）
 void print_bitmap(uint64_t bitmap);
 
-// // 检查bitmap中缺失的块数量
-// int count_missing_bits(uint64_t bitmap);
 // 检查bitmap中置位(1)的数量
 int count_set_bits(uint64_t bitmap);
 
 // 判断bitmap1是否包含bitmap2的所有缺失块
 bool bitmap_covers(uint64_t bitmap1, uint64_t bitmap2);
+
+// ========== 传输层接口 (新) ==========
+
+// 初始化传输层 (启动Tx/Rx线程)
+bool transport_init(bool is_sender);
+
+// 发送报文 (放入发送队列)
+void transport_send(const void *data, size_t len);
+
+// 接收报文 (从接收队列取出，阻塞直到有数据)
+size_t transport_recv(void *buffer, size_t max_len);
+
+// 关闭传输层
+void transport_close();
 
 #endif // BROADCAST_PROTOCOL_H

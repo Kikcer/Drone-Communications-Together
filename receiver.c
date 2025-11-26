@@ -1,7 +1,6 @@
 #include "broadcast_protocol.h"
 
 static ReceiverSession g_session;
-static int g_multicast_sock;
 static uint8_t g_uav_id = 0;
 static pthread_mutex_t g_session_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -188,7 +187,7 @@ void *nack_timer_thread(void *arg)
         nack.uav_id = g_uav_id;
         nack.missing_bitmap = ctx->my_missing_bitmap;
 
-        send_multicast(g_multicast_sock, &nack, sizeof(nack));
+        transport_send(&nack, sizeof(nack));
 
         int missing_count = count_set_bits(ctx->my_missing_bitmap);
         printf("[UAV %u] Sent NACK for window %u (missing %d chunks)\n",
@@ -223,13 +222,6 @@ void process_status_request(const StatusRequest *req)
     pthread_mutex_lock(&g_session_mutex);
     WindowState *window = &g_session.windows[window_id];
 
-    // // 如果窗口已完成，不需要响应
-    // if (window->completed)
-    // {
-    //     pthread_mutex_unlock(&g_session_mutex);
-    //     return;
-    // }
-
     uint64_t received_bitmap = window->received_bitmap;
     pthread_mutex_unlock(&g_session_mutex);
 
@@ -258,17 +250,13 @@ void process_status_request(const StatusRequest *req)
         }
     }
 
+    printf("[UAV %u] Received STATUS_REQ for window %u (round %u)\n", g_uav_id, window_id, req->round_id);
+
     printf("[UAV %u] Window %u status: received %d/%u chunks, received_bitmap=0x%llx, expected_bitmap=0x%llx, missing_bitmap=0x%llx\n",
            g_uav_id, window_id, received_count, chunks_in_window,
            (unsigned long long)received_bitmap,
            (unsigned long long)expected_bitmap,
            (unsigned long long)missing_bitmap);
-
-    // if (missing_bitmap == 0)
-    // {
-    //     printf("[UAV %u] Window %u: No missing chunks, not sending NACK\n", g_uav_id, window_id);
-    //     return; // 没有缺失，不响应
-    // }
 
     // 计算缺失块数量（用于日志）
     int missing_count = 0;
@@ -292,7 +280,7 @@ void process_status_request(const StatusRequest *req)
     nack.round_id = req->round_id;
     nack.uav_id = g_uav_id;
     nack.missing_bitmap = missing_bitmap;
-    send_multicast(g_multicast_sock, &nack, sizeof(nack));
+    transport_send(&nack, sizeof(nack));
 }
 
 // ========== 处理其他节点的NACK（用于抑制） ==========
@@ -392,14 +380,13 @@ void process_end_message(const EndMessage *end_msg)
 // ========== 消息接收主循环 ==========
 void *message_receiver_thread(void *arg)
 {
-    uint8_t buffer[2048];
-    struct sockaddr_in src_addr;
+    uint8_t buffer[MAX_PACKET_SIZE];
 
     printf("[UAV %u] Message receiver thread started.\n", g_uav_id);
 
     while (1)
     {
-        int recv_len = recv_multicast(g_multicast_sock, buffer, sizeof(buffer), &src_addr);
+        size_t recv_len = transport_recv(buffer, sizeof(buffer));
         if (recv_len < sizeof(MessageHeader))
         {
             continue;
@@ -485,10 +472,7 @@ void cleanup_receiver_session()
         }
         free(g_session.windows);
     }
-    if (g_multicast_sock >= 0)
-    {
-        close(g_multicast_sock);
-    }
+    transport_close();
 }
 
 // ========== 主函数 ==========
@@ -515,11 +499,10 @@ int main(int argc, char *argv[])
     printf("========================================\n");
     fflush(stdout);
 
-    // 创建组播socket
-    g_multicast_sock = create_multicast_socket(false);
-    if (g_multicast_sock < 0)
+    // 初始化传输层 (Receiver是接收方，但也发送NACK)
+    if (!transport_init(false))
     {
-        fprintf(stderr, "Failed to create multicast socket\n");
+        fprintf(stderr, "Failed to initialize transport layer\n");
         return 1;
     }
 

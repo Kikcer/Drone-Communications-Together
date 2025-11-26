@@ -1,7 +1,6 @@
 #include "broadcast_protocol.h"
 
 static MasterSession g_session;
-static int g_multicast_sock;
 static pthread_mutex_t g_session_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // ========== 初始化Master会话 ==========
@@ -75,7 +74,7 @@ void send_session_announce()
     printf("[Master] Sending SESSION_ANNOUNCE...\n");
     for (int i = 0; i < ANNOUNCE_REPEAT_COUNT; i++)
     {
-        send_multicast(g_multicast_sock, &msg, sizeof(msg));
+        transport_send(&msg, sizeof(msg));
         usleep(10000);
     }
 }
@@ -110,7 +109,7 @@ void broadcast_window_chunks(uint32_t window_id)
         chunk_msg.crc = crc16(chunk_msg.data, bytes_read);
 
         // 发送数据块
-        send_multicast(g_multicast_sock, &chunk_msg, sizeof(chunk_msg));
+        transport_send(&chunk_msg, sizeof(chunk_msg));
 
         // 控制发送速率（避免过快导致丢包）
         usleep(1000); // 1ms延迟，约1MB/s传输速率
@@ -132,20 +131,19 @@ void send_status_request(uint32_t window_id, uint16_t round_id)
     msg.round_id = round_id;
 
     printf("[Master] Sending STATUS_REQ for window %u (round %u)\n", window_id, round_id);
-    send_multicast(g_multicast_sock, &msg, sizeof(msg));
+    transport_send(&msg, sizeof(msg));
 }
 
 // ========== NACK接收处理线程 ==========
 void *nack_receiver_thread(void *arg)
 {
-    uint8_t buffer[2048];
-    struct sockaddr_in src_addr;
+    uint8_t buffer[MAX_PACKET_SIZE];
 
     printf("[Master] NACK receiver thread started.\n");
 
     while (1)
     {
-        int recv_len = recv_multicast(g_multicast_sock, buffer, sizeof(buffer), &src_addr);
+        size_t recv_len = transport_recv(buffer, sizeof(buffer));
         if (recv_len < sizeof(MessageHeader))
         {
             continue;
@@ -239,7 +237,7 @@ void retransmit_window_chunks(uint32_t window_id)
             chunk_msg.crc = crc16(chunk_msg.data, bytes_read);
 
             // 发送重传块
-            send_multicast(g_multicast_sock, &chunk_msg, sizeof(chunk_msg));
+            transport_send(&chunk_msg, sizeof(chunk_msg));
             usleep(1000);
         }
     }
@@ -369,7 +367,7 @@ void send_end_message()
     // 多次发送END消息
     for (int i = 0; i < 5; i++)
     {
-        send_multicast(g_multicast_sock, &msg, sizeof(msg));
+        transport_send(&msg, sizeof(msg));
         usleep(50000);
     }
 }
@@ -385,10 +383,7 @@ void cleanup_master_session()
     {
         free(g_session.windows);
     }
-    if (g_multicast_sock >= 0)
-    {
-        close(g_multicast_sock);
-    }
+    transport_close();
 }
 
 // ========== 主函数 ==========
@@ -419,11 +414,10 @@ int main(int argc, char *argv[])
 #endif
     fflush(stdout);
 
-    // 创建组播socket（Master 需要接收NACK，所以使用false模式）
-    g_multicast_sock = create_multicast_socket(false);
-    if (g_multicast_sock < 0)
+    // 初始化传输层 (Master 既发送数据也接收NACK，需要加入组播组)
+    if (!transport_init(false))
     {
-        fprintf(stderr, "Failed to create multicast socket\n");
+        fprintf(stderr, "Failed to initialize transport layer\n");
         return 1;
     }
 

@@ -1,5 +1,16 @@
 #include "broadcast_protocol.h"
 
+// ========== 全局传输层状态 ==========
+static struct
+{
+    int sock;
+    PacketQueue tx_queue;
+    PacketQueue rx_queue;
+    pthread_t tx_thread;
+    pthread_t rx_thread;
+    bool running;
+} g_transport;
+
 // ========== CRC16校验实现 ==========
 uint16_t crc16(const uint8_t *data, size_t len)
 {
@@ -107,9 +118,6 @@ int create_multicast_socket(bool sender)
 // ========== 发送组播消息 ==========
 int send_multicast(int sock, const void *data, size_t len)
 {
-    // 注意：丢包模拟已移到接收方，确保每个接收方独立丢包
-    // 发送方总是发送所有数据包
-
     struct sockaddr_in dest_addr;
     memset(&dest_addr, 0, sizeof(dest_addr));
     dest_addr.sin_family = AF_INET;
@@ -184,4 +192,153 @@ bool bitmap_covers(uint64_t bitmap1, uint64_t bitmap2)
 
     // 如果missing2是missing1的子集，则bitmap1覆盖bitmap2
     return (missing2 & missing1) == missing2;
+}
+
+// ========== 队列操作函数 ==========
+
+static void queue_init(PacketQueue *q)
+{
+    q->head = 0;
+    q->tail = 0;
+    q->count = 0;
+    pthread_mutex_init(&q->mutex, NULL);
+    pthread_cond_init(&q->not_empty, NULL);
+    pthread_cond_init(&q->not_full, NULL);
+}
+
+static void queue_push(PacketQueue *q, const void *data, size_t len)
+{
+    pthread_mutex_lock(&q->mutex);
+
+    // 如果队列满，等待（阻塞）
+    while (q->count >= QUEUE_CAPACITY)
+    {
+        pthread_cond_wait(&q->not_full, &q->mutex);
+    }
+
+    memcpy(q->data[q->tail], data, len);
+    q->lens[q->tail] = len;
+    q->tail = (q->tail + 1) % QUEUE_CAPACITY;
+    q->count++;
+
+    pthread_cond_signal(&q->not_empty);
+    pthread_mutex_unlock(&q->mutex);
+}
+
+static size_t queue_pop(PacketQueue *q, void *buffer, size_t max_len)
+{
+    pthread_mutex_lock(&q->mutex);
+
+    // 如果队列空，等待（阻塞）
+    while (q->count == 0)
+    {
+        pthread_cond_wait(&q->not_empty, &q->mutex);
+    }
+
+    size_t len = q->lens[q->head];
+    if (len > max_len)
+    {
+        len = max_len; // 截断
+    }
+    memcpy(buffer, q->data[q->head], len);
+    q->head = (q->head + 1) % QUEUE_CAPACITY;
+    q->count--;
+
+    pthread_cond_signal(&q->not_full);
+    pthread_mutex_unlock(&q->mutex);
+
+    return len;
+}
+
+// ========== 传输层线程函数 ==========
+
+static void *tx_thread_func(void *arg)
+{
+    uint8_t buffer[MAX_PACKET_SIZE];
+    while (g_transport.running)
+    {
+        size_t len = queue_pop(&g_transport.tx_queue, buffer, sizeof(buffer));
+        if (len > 0)
+        {
+            send_multicast(g_transport.sock, buffer, len);
+        }
+    }
+    return NULL;
+}
+
+static void *rx_thread_func(void *arg)
+{
+    uint8_t buffer[MAX_PACKET_SIZE];
+    struct sockaddr_in src_addr;
+    while (g_transport.running)
+    {
+        int len = recv_multicast(g_transport.sock, buffer, sizeof(buffer), &src_addr);
+        if (len > 0)
+        {
+            queue_push(&g_transport.rx_queue, buffer, len);
+        }
+    }
+    return NULL;
+}
+
+// ========== 传输层接口实现 ==========
+
+bool transport_init(bool is_sender)
+{
+    g_transport.sock = create_multicast_socket(is_sender);
+    if (g_transport.sock < 0)
+    {
+        return false;
+    }
+
+    queue_init(&g_transport.tx_queue);
+    queue_init(&g_transport.rx_queue);
+    g_transport.running = true;
+
+    // 启动Tx线程
+    if (pthread_create(&g_transport.tx_thread, NULL, tx_thread_func, NULL) != 0)
+    {
+        perror("Failed to create Tx thread");
+        close(g_transport.sock);
+        return false;
+    }
+
+    // 启动Rx线程
+    if (pthread_create(&g_transport.rx_thread, NULL, rx_thread_func, NULL) != 0)
+    {
+        perror("Failed to create Rx thread");
+        g_transport.running = false;
+        pthread_join(g_transport.tx_thread, NULL);
+        close(g_transport.sock);
+        return false;
+    }
+
+    return true;
+}
+
+void transport_send(const void *data, size_t len)
+{
+    if (!g_transport.running)
+        return;
+    queue_push(&g_transport.tx_queue, data, len);
+}
+
+size_t transport_recv(void *buffer, size_t max_len)
+{
+    if (!g_transport.running)
+        return 0;
+    return queue_pop(&g_transport.rx_queue, buffer, max_len);
+}
+
+void transport_close()
+{
+    g_transport.running = false;
+    // 唤醒可能阻塞的线程
+    pthread_cancel(g_transport.tx_thread);
+    pthread_cancel(g_transport.rx_thread);
+
+    pthread_join(g_transport.tx_thread, NULL);
+    pthread_join(g_transport.rx_thread, NULL);
+
+    close(g_transport.sock);
 }
