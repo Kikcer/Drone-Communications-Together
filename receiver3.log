@@ -10,76 +10,137 @@
   Total windows: 5
   Output: received_uav3_test_file.bin
 [UAV 3] Received STATUS_REQ for window 0 (round 0)
-[UAV 3] Window 0 status: received 61/64 chunks, received_bitmap=0xcfffffffff7fffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x3000000000800000
-[UAV 3] Window 0: Sending bitmap response (round 0, missing 3 chunks)
+[UAV 3] Window 0 status: received 63/64 chunks, received_bitmap=0xfeffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x100000000000000
+[UAV 3] Window 0: Sending bitmap response (round 0, missing 1 chunks)
+[UAV 3] Schedule NACK for window 0 in 5 ms
+[UAV 3] Sent NACK for window 0 (missing 1 chunks)
 [UAV 3] Window 0 completed and saved.
 [UAV 3] Received STATUS_REQ for window 0 (round 1)
 [UAV 3] Window 0 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 3] Window 0: Sending bitmap response (round 1, missing 0 chunks)
+[UAV 3] Schedule NACK for window 0 in 3 ms
+[UAV 3] NACK suppression DISABLED (was window 0)
+[UAV 3] NACK suppression DISABLED (was window 0)
+[UAV 3] Sent NACK for window 0 (missing 0 chunks)
 [UAV 3] Received STATUS_REQ for window 0 (round 2)
 [UAV 3] Window 0 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 3] Window 0: Sending bitmap response (round 2, missing 0 chunks)
+[UAV 3] Schedule NACK for window 0 in 14 ms
+[UAV 3] NACK suppression DISABLED (was window 0)
+[UAV 3] NACK suppression DISABLED (was window 0)
+[UAV 3] Sent NACK for window 0 (missing 0 chunks)
 [UAV 3] Received STATUS_REQ for window 0 (round 3)
 [UAV 3] Window 0 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 3] Window 0: Sending bitmap response (round 3, missing 0 chunks)
+[UAV 3] Schedule NACK for window 0 in 5 ms
+[UAV 3] NACK suppression DISABLED (was window 0)
+[UAV 3] Sent NACK for window 0 (missing 0 chunks)
 [UAV 3] Progress: 100/300 chunks (33.3%)
 [UAV 3] Received STATUS_REQ for window 1 (round 0)
-[UAV 3] Window 1 status: received 63/64 chunks, received_bitmap=0xffffffffffffffdf, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x20
-[UAV 3] Window 1: Sending bitmap response (round 0, missing 1 chunks)
+[UAV 3] Window 1 status: received 61/64 chunks, received_bitmap=0xffffffffe7ffffef, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x18000010
+[UAV 3] Window 1: Sending bitmap response (round 0, missing 3 chunks)
+[UAV 3] Schedule NACK for window 1 in 8 ms
+[UAV 3] Sent NACK for window 1 (missing 3 chunks)
 [UAV 3] Window 1 completed and saved.
 [UAV 3] Received STATUS_REQ for window 1 (round 1)
 [UAV 3] Window 1 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 3] Window 1: Sending bitmap response (round 1, missing 0 chunks)
+[UAV 3] Schedule NACK for window 1 in 11 ms
+[UAV 3] NACK suppression DISABLED (was window 1)
+[UAV 3] NACK suppression DISABLED (was window 1)
+[UAV 3] Sent NACK for window 1 (missing 0 chunks)
 [UAV 3] Received STATUS_REQ for window 1 (round 2)
 [UAV 3] Window 1 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 3] Window 1: Sending bitmap response (round 2, missing 0 chunks)
+[UAV 3] Schedule NACK for window 1 in 10 ms
+[UAV 3] NACK suppression DISABLED (was window 1)
+[UAV 3] Sent NACK for window 1 (missing 0 chunks)
 [UAV 3] Received STATUS_REQ for window 1 (round 3)
 [UAV 3] Window 1 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 3] Window 1: Sending bitmap response (round 3, missing 0 chunks)
+[UAV 3] Schedule NACK for window 1 in 0 ms
+[UAV 3] Sent NACK for window 1 (missing 0 chunks)
 [UAV 3] Received STATUS_REQ for window 2 (round 0)
-[UAV 3] Window 2 status: received 63/64 chunks, received_bitmap=0xfffffffffffffeff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x100
-[UAV 3] Window 2: Sending bitmap response (round 0, missing 1 chunks)
+[UAV 3] Window 2 status: received 60/64 chunks, received_bitmap=0xffffffffdff6fffe, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x20090001
+[UAV 3] Window 2: Sending bitmap response (round 0, missing 4 chunks)
+[UAV 3] Schedule NACK for window 2 in 6 ms
+[UAV 3] Sent NACK for window 2 (missing 4 chunks)
 [UAV 3] Window 2 completed and saved.
 [UAV 3] Received STATUS_REQ for window 2 (round 1)
 [UAV 3] Window 2 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 3] Window 2: Sending bitmap response (round 1, missing 0 chunks)
+[UAV 3] Schedule NACK for window 2 in 11 ms
+[UAV 3] Sent NACK for window 2 (missing 0 chunks)
 [UAV 3] Received STATUS_REQ for window 2 (round 2)
 [UAV 3] Window 2 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 3] Window 2: Sending bitmap response (round 2, missing 0 chunks)
+[UAV 3] Schedule NACK for window 2 in 4 ms
+[UAV 3] NACK suppression DISABLED (was window 2)
+[UAV 3] Sent NACK for window 2 (missing 0 chunks)
 [UAV 3] Received STATUS_REQ for window 2 (round 3)
 [UAV 3] Window 2 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 3] Window 2: Sending bitmap response (round 3, missing 0 chunks)
+[UAV 3] Schedule NACK for window 2 in 2 ms
+[UAV 3] NACK suppression DISABLED (was window 2)
+[UAV 3] Sent NACK for window 2 (missing 0 chunks)
+[UAV 3] Received STATUS_REQ for window 2 (round 4)
+[UAV 3] Window 2 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
+[UAV 3] Window 2: Sending bitmap response (round 4, missing 0 chunks)
+[UAV 3] Schedule NACK for window 2 in 3 ms
+[UAV 3] Sent NACK for window 2 (missing 0 chunks)
 [UAV 3] Progress: 200/300 chunks (66.7%)
 [UAV 3] Received STATUS_REQ for window 3 (round 0)
-[UAV 3] Window 3 status: received 61/64 chunks, received_bitmap=0xefffffffffffff77, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x1000000000000088
-[UAV 3] Window 3: Sending bitmap response (round 0, missing 3 chunks)
+[UAV 3] Window 3 status: received 60/64 chunks, received_bitmap=0xdffffffff3ffffbf, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x200000000c000040
+[UAV 3] Window 3: Sending bitmap response (round 0, missing 4 chunks)
+[UAV 3] Schedule NACK for window 3 in 10 ms
+[UAV 3] Sent NACK for window 3 (missing 4 chunks)
 [UAV 3] Window 3 completed and saved.
 [UAV 3] Received STATUS_REQ for window 3 (round 1)
 [UAV 3] Window 3 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 3] Window 3: Sending bitmap response (round 1, missing 0 chunks)
+[UAV 3] Schedule NACK for window 3 in 3 ms
+[UAV 3] Sent NACK for window 3 (missing 0 chunks)
 [UAV 3] Received STATUS_REQ for window 3 (round 2)
 [UAV 3] Window 3 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 3] Window 3: Sending bitmap response (round 2, missing 0 chunks)
+[UAV 3] Schedule NACK for window 3 in 3 ms
+[UAV 3] Sent NACK for window 3 (missing 0 chunks)
 [UAV 3] Received STATUS_REQ for window 3 (round 3)
 [UAV 3] Window 3 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
 [UAV 3] Window 3: Sending bitmap response (round 3, missing 0 chunks)
+[UAV 3] Schedule NACK for window 3 in 6 ms
+[UAV 3] NACK suppression DISABLED (was window 3)
+[UAV 3] NACK suppression DISABLED (was window 3)
+[UAV 3] Sent NACK for window 3 (missing 0 chunks)
+[UAV 3] Received STATUS_REQ for window 3 (round 4)
+[UAV 3] Window 3 status: received 64/64 chunks, received_bitmap=0xffffffffffffffff, expected_bitmap=0xffffffffffffffff, missing_bitmap=0x0
+[UAV 3] Window 3: Sending bitmap response (round 4, missing 0 chunks)
+[UAV 3] Schedule NACK for window 3 in 5 ms
+[UAV 3] Sent NACK for window 3 (missing 0 chunks)
 [UAV 3] Received STATUS_REQ for window 4 (round 0)
-[UAV 3] Window 4 status: received 39/44 chunks, received_bitmap=0xffafcfffffe, expected_bitmap=0xfffffffffff, missing_bitmap=0x503000001
-[UAV 3] Window 4: Sending bitmap response (round 0, missing 5 chunks)
-[UAV 3] Received STATUS_REQ for window 4 (round 1)
-[UAV 3] Window 4 status: received 42/44 chunks, received_bitmap=0xffbfeffffff, expected_bitmap=0xfffffffffff, missing_bitmap=0x401000000
-[UAV 3] Window 4: Sending bitmap response (round 1, missing 2 chunks)
+[UAV 3] Window 4 status: received 41/44 chunks, received_bitmap=0xfffffeefffb, expected_bitmap=0xfffffffffff, missing_bitmap=0x110004
+[UAV 3] Window 4: Sending bitmap response (round 0, missing 3 chunks)
+[UAV 3] Schedule NACK for window 4 in 0 ms
+[UAV 3] Sent NACK for window 4 (missing 3 chunks)
 [UAV 3] Window 4 completed and saved.
 [UAV 3] Progress: 300/300 chunks (100.0%)
+[UAV 3] Received STATUS_REQ for window 4 (round 1)
+[UAV 3] Window 4 status: received 44/44 chunks, received_bitmap=0xfffffffffff, expected_bitmap=0xfffffffffff, missing_bitmap=0x0
+[UAV 3] Window 4: Sending bitmap response (round 1, missing 0 chunks)
+[UAV 3] Schedule NACK for window 4 in 11 ms
+[UAV 3] NACK suppression DISABLED (was window 4)
+[UAV 3] NACK suppression DISABLED (was window 4)
+[UAV 3] Sent NACK for window 4 (missing 0 chunks)
 [UAV 3] Received STATUS_REQ for window 4 (round 2)
 [UAV 3] Window 4 status: received 44/44 chunks, received_bitmap=0xfffffffffff, expected_bitmap=0xfffffffffff, missing_bitmap=0x0
 [UAV 3] Window 4: Sending bitmap response (round 2, missing 0 chunks)
+[UAV 3] Schedule NACK for window 4 in 2 ms
+[UAV 3] Sent NACK for window 4 (missing 0 chunks)
 [UAV 3] Received STATUS_REQ for window 4 (round 3)
 [UAV 3] Window 4 status: received 44/44 chunks, received_bitmap=0xfffffffffff, expected_bitmap=0xfffffffffff, missing_bitmap=0x0
 [UAV 3] Window 4: Sending bitmap response (round 3, missing 0 chunks)
-[UAV 3] Received STATUS_REQ for window 4 (round 4)
-[UAV 3] Window 4 status: received 44/44 chunks, received_bitmap=0xfffffffffff, expected_bitmap=0xfffffffffff, missing_bitmap=0x0
-[UAV 3] Window 4: Sending bitmap response (round 4, missing 0 chunks)
+[UAV 3] Schedule NACK for window 4 in 6 ms
+[UAV 3] Sent NACK for window 4 (missing 0 chunks)
 [UAV 3] Received END message, verifying file...
 [UAV 3] Received END message, verifying file...
 free(): double free detected in tcache 2

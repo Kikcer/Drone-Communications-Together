@@ -73,15 +73,33 @@ dd if=/dev/urandom of=test_data.bin bs=1M count=1
 
 ## ⚙️ 配置说明
 
-核心参数定义在 `broadcast_protocol.h` 中，可根据实际网络环境进行调整：
+核心参数定义在 `broadcast_protocol.h` 中，修改后**必须重新编译**（执行 `make -f makefile_broadcast clean && make -f makefile_broadcast all`）。
 
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `MULTICAST_GROUP` | "239.255.1.1" | 组播 IP 地址 |
-| `MULTICAST_PORT` | 9000 | 组播端口 |
-| `MAX_CHUNK_SIZE` | 1024 | 单个数据块大小 (Bytes) |
-| `WINDOW_SIZE` | 64 | 滑动窗口大小 (Blocks) |
-| `SIMULATE_PACKET_LOSS` | 0 | 模拟丢包率 (0-100)，用于测试 |
+### 主要参数
+
+| 参数宏 | 默认值 | 说明 | 调整建议 |
+|--------|--------|------|----------|
+| `MULTICAST_GROUP` | "239.255.1.1" | 组播 IP 地址 | 需确保网络支持组播 |
+| `MULTICAST_PORT` | 9000 | 组播端口 | 避免与其他服务冲突 |
+| `MAX_CHUNK_SIZE` | 1024 | 单个数据块大小 (Bytes) | 建议小于 MTU (通常 1500) 以避免 IP 分片 |
+| `WINDOW_SIZE` | 64 | 滑动窗口大小 (Blocks) | 内存受限时调小；高吞吐时调大 (最大不要超过 64 位图限制) |
+| `SIMULATE_PACKET_LOSS` | 0 | 模拟丢包率 (0-100) | 仅用于测试环境模拟恶劣网络 |
+
+### 高级调优参数
+
+| 参数宏 | 默认值 | 说明 | 调整建议 |
+|--------|--------|------|----------|
+| `NACK_TIMEOUT_MS` | 15 | NACK 随机退避最大延迟 (ms) | 节点越多建议设得越大，以分散 NACK 响应 |
+| `STATUS_REQ_INTERVAL` | 500 | 状态查询间隔 (ms) | 如果 NACK 回复较慢，需增大此值防止 Master 过早重试 |
+| `MAX_RETRANS_ROUNDS` | 10 | 最大重传轮数 | 高丢包环境下增加此值，确保传输成功率 |
+| `ANNOUNCE_REPEAT_COUNT` | 5 | 启动报文重复次数 | 确保所有节点都能收到初始通知 |
+
+### 如何修改
+
+1. 打开 `broadcast_protocol.h` 文件。
+2. 找到 `#define` 宏定义部分。
+3. 修改对应的值（例如将 `SIMULATE_PACKET_LOSS` 改为 `10` 以模拟 10% 丢包）。
+4. 保存文件并重新编译项目。
 
 ## 📂 项目结构
 

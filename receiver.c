@@ -55,7 +55,7 @@ bool init_receiver_session(const SessionAnnounce *announce)
         g_session.windows[i].window_id = i;
         g_session.windows[i].received_bitmap = 0;
         g_session.windows[i].completed = false;
-        g_session.windows[i].data_buffer = NULL; // 不再需要缓冲区
+        // g_session.windows[i].data_buffer = NULL; // 不再需要缓冲区
     }
 
     // 打开输出文件（每个UAV使用独立的文件名）
@@ -145,11 +145,11 @@ void process_data_chunk(const DataChunk *chunk)
         window->completed = true;
 
         // 释放窗口缓冲区（数据已写入文件）
-        if (window->data_buffer)
-        {
-            free(window->data_buffer);
-            window->data_buffer = NULL;
-        }
+        // if (window->data_buffer)
+        // {
+        //     free(window->data_buffer);
+        //     window->data_buffer = NULL;
+        // }
 
         printf("[UAV %u] Window %u completed and saved.\n", g_uav_id, window_id);
     }
@@ -270,17 +270,39 @@ void process_status_request(const StatusRequest *req)
     printf("[UAV %u] Window %u: Sending bitmap response (round %u, missing %d chunks)\n",
            g_uav_id, window_id, req->round_id, missing_count);
 
-    // 直接发送bitmap响应（使用NACK报文，missing_bitmap可为0，表示无缺失）
-    NackMessage nack;
-    memset(&nack, 0, sizeof(nack));
-    nack.header.msg_type = MSG_NACK;
-    nack.header.payload_len = sizeof(NackMessage) - sizeof(MessageHeader);
-    nack.file_id = g_session.file_id;
-    nack.window_id = window_id;
-    nack.round_id = req->round_id;
-    nack.uav_id = g_uav_id;
-    nack.missing_bitmap = missing_bitmap;
-    transport_send(&nack, sizeof(nack));
+    // 启动NACK延迟线程
+    pthread_mutex_lock(&g_nack_mutex);
+
+    // 如果已有未完成的timer，先取消它（简单起见，这里假设同一时间只有一个活动窗口查询）
+    // 实际应用中可能需要更复杂的队列，但在此协议中Master是串行查询窗口的
+    if (g_nack_ctx.active)
+    {
+        // 上一个还没发完？ 强制停止或其他逻辑
+        // 这里我们简单地覆盖它，因为Master发起了新的查询
+        if (g_nack_ctx.timer_thread)
+        {
+            pthread_cancel(g_nack_ctx.timer_thread);
+            pthread_join(g_nack_ctx.timer_thread, NULL);
+        }
+    }
+
+    g_nack_ctx.active = true;
+    g_nack_ctx.suppressed = false;
+    g_nack_ctx.window_id = window_id;
+    g_nack_ctx.round_id = req->round_id;
+    g_nack_ctx.my_missing_bitmap = missing_bitmap;
+
+    // 计算随机退避时间 (0 ~ NACK_TIMEOUT_MS)
+    g_nack_ctx.pending_timeout_ms = rand() % NACK_TIMEOUT_MS;
+
+    printf("[UAV %u] Schedule NACK for window %u in %lu ms\n",
+           g_uav_id, window_id, g_nack_ctx.pending_timeout_ms);
+
+    pthread_create(&g_nack_ctx.timer_thread, NULL, nack_timer_thread, &g_nack_ctx);
+    // 需要detach或者join，这里使用detach让它自生自灭
+    pthread_detach(g_nack_ctx.timer_thread);
+
+    pthread_mutex_unlock(&g_nack_mutex);
 }
 
 // ========== 处理其他节点的NACK（用于抑制） ==========
@@ -308,7 +330,8 @@ void process_other_nack(const NackMessage *nack)
         if (bitmap_covers(nack->missing_bitmap, g_nack_ctx.my_missing_bitmap))
         {
             // 对方的NACK已经涵盖了我的缺失块，抑制我的NACK
-            g_nack_ctx.suppressed = true;
+            // g_nack_ctx.suppressed = true;
+            printf("[UAV %u] NACK suppression DISABLED (was window %u)\n", g_uav_id, nack->window_id);
         }
     }
 
@@ -465,10 +488,10 @@ void cleanup_receiver_session()
     {
         for (uint32_t i = 0; i < g_session.total_windows; i++)
         {
-            if (g_session.windows[i].data_buffer)
-            {
-                free(g_session.windows[i].data_buffer);
-            }
+            // if (g_session.windows[i].data_buffer)
+            // {
+            //     free(g_session.windows[i].data_buffer);
+            // }
         }
         free(g_session.windows);
     }

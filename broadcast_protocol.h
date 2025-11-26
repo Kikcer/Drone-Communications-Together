@@ -19,7 +19,7 @@
 #define MAX_CHUNK_SIZE 1024      // 每个数据块1KB
 #define WINDOW_SIZE 64           // 每个窗口64个块
 #define MAX_UAVS 32              // 最大无人机数量
-#define NACK_TIMEOUT_MS 50       // NACK随机退避最大延迟
+#define NACK_TIMEOUT_MS 15       // NACK随机退避最大延迟
 #define STATUS_REQ_INTERVAL 500  // 状态查询间隔（毫秒）增加以确保NACK有足够时间
 #define MAX_RETRANS_ROUNDS 10    // 最大重传轮数
 #define ANNOUNCE_REPEAT_COUNT 5  // 会话启动报文重复发送次数
@@ -125,7 +125,7 @@ typedef struct
     uint32_t window_id;
     uint64_t received_bitmap; // 64位bitmap，1表示已收到
     bool completed;           // 窗口是否完成
-    uint8_t *data_buffer;     // 数据缓冲区
+    // uint8_t *data_buffer;     // 数据缓冲区
 } WindowState;
 
 // 接收方会话状态
